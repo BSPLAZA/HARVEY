@@ -1,6 +1,7 @@
 # src/utils/prepare_dataset.py
 
 from azureml.core import Dataset
+from azureml.core import Datastore
 from azureml.core import Workspace
 import os
 
