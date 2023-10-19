@@ -40,8 +40,8 @@ data_transforms = {
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ])
 }
-
-image_datasets = {x: datasets.ImageFolder(os.path.join(dataset.mount(), x), data_transforms[x]) for x in ['train', 'valid']}
+with dataset.mount() as mount_context:
+    image_datasets = {x: datasets.ImageFolder(os.path.join(mount_context, x), data_transforms[x]) for x in ['train', 'valid']}
 dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=BATCH_SIZE, shuffle=True) for x in ['train', 'valid']}
 
 # Load a pre-trained model and modify the last layer
