@@ -3,9 +3,9 @@
 from azureml.core import Workspace, Datastore
 
 # Replace these with your Azure ML Workspace details
-subscription_id = 'YOUR_SUBSCRIPTION_ID'
-resource_group = 'YOUR_RESOURCE_GROUP'
-workspace_name = 'YOUR_WORKSPACE_NAME'
+subscription_id = '4f9c49dd-36e0-4ee8-a181-7de585fca825'
+resource_group = 'HARVEY-resources'
+workspace_name = 'Harvey_AML'
 
 # Get the Azure ML workspace
 workspace = Workspace(subscription_id, resource_group, workspace_name)
