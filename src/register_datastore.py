@@ -3,7 +3,7 @@
 from azureml.core import Workspace, Datastore
 
 # Replace these with your Azure ML Workspace details
-subscription_id = '4f9c49dd-36e0-4ee8-a181-7de585fca825'
+subscription_id = '4914df7c-27f4-4064-af6c-de1c82735e9b'
 resource_group = 'HARVEY-resources'
 workspace_name = 'Harvey_AML'
 
