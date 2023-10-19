@@ -1,57 +1,81 @@
-# Import necessary libraries
-import tensorflow as tf
-import numpy as np
-from object_detection.utils import config_util
-from object_detection.builders import model_builder
-from object_detection.utils import visualization_utils as viz_utils
-from object_detection.utils import colab_utils
-from object_detection.utils import config_util
+# src/models/ObjectDetectionTraining.py
 
-# Set up the paths
-MODEL_DIR = 'model/'
-PIPELINE_CONFIG_PATH = 'path/to/pipeline.config'
-CHECKPOINT_PATH = 'path/to/pretrained_checkpoint'
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torchvision import datasets, models, transforms
+from azureml.core import Workspace, Dataset
+from azureml.core import Model
+import os
 
-# Load the pipeline config
-configs = config_util.get_configs_from_pipeline_file(PIPELINE_CONFIG_PATH)
-model_config = configs['model']
-model_config.ssd.num_classes = num_classes  # Number of object classes
+# Define constants
+BATCH_SIZE = 32
+EPOCHS = 10
+LEARNING_RATE = 0.001
+NUM_CLASSES = 40  # Total unique classes
 
-# Build the detection model
-detection_model = model_builder.build(model_config=model_config, is_training=False)
+# Set device
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Restore checkpoint
-ckpt = tf.compat.v2.train.Checkpoint(model=detection_model)
-ckpt.restore(CHECKPOINT_PATH).expect_partial()
+# Load the dataset
+subscription_id = '4914df7c-27f4-4064-af6c-de1c82735e9b'
+resource_group = 'HARVEY-resources'
+workspace_name = 'Harvey_AML'
+workspace = Workspace(subscription_id, resource_group, workspace_name)
+dataset_name = 'plant_disease_images'
+dataset = Dataset.get_by_name(workspace, name=dataset_name)
 
-# Set up the detection function
-@tf.function
-def detect_fn(image):
-    image, shapes = detection_model.preprocess(image)
-    prediction_dict = detection_model.predict(image, shapes)
-    detections = detection_model.postprocess(prediction_dict, shapes)
-    return detections
+# Define transformations and data loader
+data_transforms = {
+    'train': transforms.Compose([
+        transforms.RandomResizedCrop(224),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    ]),
+    'valid': transforms.Compose([
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    ])
+}
+with dataset.mount() as mount_context:
+    image_datasets = {x: datasets.ImageFolder(os.path.join(mount_context, x), data_transforms[x]) for x in ['train', 'valid']}
+dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=BATCH_SIZE, shuffle=True) for x in ['train', 'valid']}
 
-# Load and preprocess your image (while loop this for the entire set)
-image_path = 'path/to/your/image.jpg'
-image_np = np.array(tf.image.decode_image(tf.io.read_file(image_path)))
+# Load a pre-trained model and modify the last layer
+model = models.resnet50(pretrained=True)
+num_ftrs = model.fc.in_features
+model.fc = nn.Linear(num_ftrs, NUM_CLASSES)
+model = model.to(device)
 
-# Make detections
-input_tensor = tf.convert_to_tensor(image_np)
-detections = detect_fn(input_tensor)
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE, momentum=0.9)
 
-# Visualize the results
-viz_utils.visualize_boxes_and_labels_on_image_array(
-    image_np,
-    detections['detection_boxes'][0].numpy(),
-    detections['detection_classes'][0].numpy().astype(int),
-    detections['detection_scores'][0].numpy(),
-    category_index,
-    use_normalized_coordinates=True,
-    max_boxes_to_draw=200,
-    min_score_thresh=.30,
-)
+# Train the model
+model.train()
+for epoch in range(EPOCHS):
+    running_loss = 0.0
+    for inputs, labels in dataloaders['train']:
+        inputs, labels = inputs.to(device), labels.to(device)
 
-# Display or save the result
-plt.imshow(image_np)
-plt.show()
+        optimizer.zero_grad()
+        outputs = model(inputs)
+        loss = criterion(outputs, labels)
+        loss.backward()
+        optimizer.step()
+
+        running_loss += loss.item() * inputs.size(0)
+    
+    print(f"Epoch {epoch+1}/{EPOCHS} - Loss: {running_loss / len(dataloaders['train'].dataset)}")
+
+# Save the model
+torch.save(model.state_dict(), './data/processed/plant_disease_model.pth')
+print("Model saved.")
+
+model = Model.register(model_path="./data/processed/plant_disease_model.pth",
+                       model_name="plant_disease_detection",
+                       tags={'type': "classification", 'framework': "pytorch"},
+                       description="Plant disease detection model",
+                       workspace=workspace)
