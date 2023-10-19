@@ -6,7 +6,7 @@ import torch.optim as optim
 from torchvision import datasets, models, transforms
 from azureml.core import Workspace, Dataset
 from azureml.core import Model
-
+import os
 
 # Define constants
 BATCH_SIZE = 32
