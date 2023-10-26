@@ -1,0 +1,4 @@
+name: HarveyVenv
+channels:
+  - defaults
+prefix: /Users/bryanplaza/anaconda3/envs/HarveyVenv
