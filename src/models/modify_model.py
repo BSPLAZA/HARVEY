@@ -16,9 +16,9 @@ def modify_resnet50_for_dataset(model_path, save_path, dataset_path):
     # Modify the architecture BEFORE loading the state dictionary
     
     # The below line is for running the model on a GPU device.
-    # num_classes_saved_model = torch.load(model_path)['fc.bias'].shape[0]
+    num_classes_saved_model = torch.load(model_path)['fc.bias'].shape[0]
     # The below line is for running the model on a CPU device
-    num_classes_saved_model = torch.load(model_path, map_location=device)['fc.bias'].shape[0]
+    # num_classes_saved_model = torch.load(model_path, map_location=device)['fc.bias'].shape[0]
 
     model.fc = torch.nn.Linear(model.fc.in_features, num_classes_saved_model)
 
