@@ -2,10 +2,11 @@ import torch
 import torchvision.models as models
 
 
-def load_resnet50_model(path='../../models/ResNet50-Plant-model-80.pth', device=None):
+def load_resnet50_model(path='../models/ResNet50-Plant-model-Final.pth', device=None):
     if device is None:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+    """ This is used when loading  the entire model and not just the state dictionary
     # Instantiate the model architecture
     model = models.resnet50(pretrained=False)
 
@@ -18,4 +19,9 @@ def load_resnet50_model(path='../../models/ResNet50-Plant-model-80.pth', device=
     
     model.load_state_dict(state_dict)
 
+    """
+
+    # Loading only state dictionary
+    model = torch.load(path, map_location=device)
+    
     return model

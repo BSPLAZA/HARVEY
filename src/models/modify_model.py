@@ -1,24 +1,28 @@
 import torch
 import torchvision.models as models
 import os
+import argparse
 
+parser = argparse.ArgumentParser(description='Modify the Model script')
+parser.add_argument('--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu',
+                    help='device to use for computation (default: auto-detect)')
+args = parser.parse_args()
 
 def get_num_classes(root_dir):
     return len([name for name in os.listdir(root_dir) if os.path.isdir(os.path.join(root_dir, name))])
 
 
 def modify_resnet50_for_dataset(model_path, save_path, dataset_path):
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device(args.device)
 
     # Instantiate the model architecture without loading the weights
     model = models.resnet50(weights=None)
 
     # Modify the architecture BEFORE loading the state dictionary
     
-    # The below line is for running the model on a GPU device.
-    num_classes_saved_model = torch.load(model_path)['fc.bias'].shape[0]
-    # The below line is for running the model on a CPU device
-    # num_classes_saved_model = torch.load(model_path, map_location=device)['fc.bias'].shape[0]
+    # Load the model based on the specified device
+    num_classes_saved_model = torch.load(model_path, map_location=device)['fc.bias'].shape[0]
+
 
     model.fc = torch.nn.Linear(model.fc.in_features, num_classes_saved_model)
 
