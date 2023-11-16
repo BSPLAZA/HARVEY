@@ -146,22 +146,22 @@ def main():
 
     # Visualize a few training images.
     plot(
-        image_paths = './datasets/FieldPlant/train/images', 
-        label_paths = './datasets/FieldPlant/train/labels',
+        image_paths = '../../data/processed/FieldPlant/train/images', 
+        label_paths = '../../data/processed/FieldPlant/train/labels',
         num_samples=4,
     )
 
-    SplitPath = './datasets/FieldPlant/train/images'
+    SplitPath = '../../data/processed/FieldPlant/train/images'
 
     # Split dataset into train, val, test
     autosplit(SplitPath)
 
     # Load generic yolo model
-    model = YOLO('./yolov8n.pt')
+    model = YOLO('../../yolov8n.pt')
 
     # Train the model
     results = model.train(
-        data = 'C:/Users/shaun/Documents/capstone/plant_disease_detection/datasets/FieldPlant/data.yaml',
+        data = '../../data/processed/FieldPlant/data.yaml',
         imgsz = 1280,
         epochs = 250,
         batch = 32, # Use -1 for autobatch if you are unsure of your vram size
@@ -170,7 +170,7 @@ def main():
     )
 
     # Load newly trained model
-    model = YOLO('./runs/detect/' + OUTPUT_MODEL_NAME + '/weights/best.pt')
+    model = YOLO('./runs/detect/' + OUTPUT_MODEL_NAME + '../../weights/best.pt')
 
     metrics = model.val() # no arguments needed, dataset and settings remembered
     metrics.box.map    # map50-95
@@ -180,7 +180,7 @@ def main():
 
     # Run inference on validation set
     results = model.predict(
-        source = './datasets/FieldPlant/train/autosplit_val.txt',
+        source = '../../data/processed/FieldPlant/train/autosplit_val.txt',
         imgsz = 1280,
         name = OUTPUT_MODEL_NAME + '_infer',
         show_labels = False
