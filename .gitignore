@@ -161,3 +161,9 @@ cython_debug/
 #.idea/
 
 .kaggle
+
+.ipynb_checkpoints/
+runs/
+datasets/PlantDoc/train
+datasets/PlantDoc/test
+datasets/FieldPlant/train

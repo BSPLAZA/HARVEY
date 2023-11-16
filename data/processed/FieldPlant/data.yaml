@@ -1,0 +1,12 @@
+train: train/autosplit_train.txt
+val: train/autosplit_val.txt
+
+nc: 27
+names: ['Cassava Bacterial Blight', 'Cassava Brown Leaf Spot', 'Cassava Healthy', 'Cassava Mosaic', 'Cassava Root Rot', 'Corn Brown Spots', 'Corn Charcoal', 'Corn Chlorotic Leaf Spot', 'Corn Gray leaf spot', 'Corn Healthy', 'Corn Insects Damages', 'Corn Mildew', 'Corn Purple Discoloration', 'Corn Smut', 'Corn Streak', 'Corn Stripe', 'Corn Violet Decoloration', 'Corn Yellow Spots', 'Corn Yellowing', 'Corn leaf blight', 'Corn rust leaf', 'Tomato Brown Spots', 'Tomato bacterial wilt', 'Tomato blight leaf', 'Tomato healthy', 'Tomato leaf mosaic virus', 'Tomato leaf yellow virus']
+
+roboflow:
+  workspace: plant-disease-detection
+  project: fieldplant
+  version: 11
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/plant-disease-detection/fieldplant/dataset/11
