@@ -16,12 +16,14 @@ class WebcamObjectDetection:
         # Store the class names for object detection.
         self.class_names = class_names
 
+        cv2.namedWindow('Webcam', cv2.WINDOW_NORMAL)  # Create a resizable window
+
+
     def predict(self, frame):
         # Use the YOLO model to predict objects in the frame.
         return self.model(frame)
 
-    def plot_bboxes(self, results, frame):
-        # Extract bounding boxes, confidences, and class IDs from the results.
+    def plot_bboxes(self, results, frame, conf_threshold=0.5):
         boxes = results[0].boxes.xyxy.cpu().numpy()
         confidences = results[0].boxes.conf.cpu().numpy()
         class_ids = results[0].boxes.cls.cpu().numpy().astype(int)
@@ -30,6 +32,8 @@ class WebcamObjectDetection:
         for i, box in enumerate(boxes):
             x1, y1, x2, y2 = map(int, box[:4])
             conf = confidences[i]
+            if conf < conf_threshold:
+                continue  # Skip detections with low confidence
             cls_id = class_ids[i]
             cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 255), 3)  # Draw rectangle.
             label = f'{self.class_names[cls_id]} {conf:.2f}'  # Create label with class name and confidence.
@@ -37,7 +41,9 @@ class WebcamObjectDetection:
 
         return frame
 
-    def __call__(self):
+    def __call__(self, frame_skip=5,display_size=(640, 480)):
+        frame_count = 0
+
         # Continuously capture frames from the webcam and process them.
         while True:
             start_time = time()
@@ -45,6 +51,14 @@ class WebcamObjectDetection:
             if not success:
                 print("Ignoring empty camera frame.")
                 continue
+
+            if frame_count % frame_skip == 0:
+                results = self.predict(frame)
+                frame = self.plot_bboxes(results, frame)
+            frame_count += 1
+
+            frame = cv2.resize(frame, display_size)  # Resize the frame
+            cv2.imshow('Webcam', frame)
 
             # Predict and plot bounding boxes on the frame.
             results = self.predict(frame)
