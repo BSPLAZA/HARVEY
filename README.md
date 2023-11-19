@@ -13,4 +13,4 @@ main.ipynb: Has the latest code
 
 main.py: contains the same code contained in the notebook. needs to be updated.
 
-webcam.py: contains code that uses a model to predict live video. Not working yet.
+webcam.py: contains code that uses a model to predict live video.
