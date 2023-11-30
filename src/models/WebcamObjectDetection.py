@@ -6,7 +6,7 @@ from ultralytics import YOLO
 class WebcamObjectDetection:
     def __init__(self, model_path, class_names):
         # Initialize the webcam. '0' denotes the default webcam.
-        self.cap = cv2.VideoCapture(1)
+        self.cap = cv2.VideoCapture(0)
         if not self.cap.isOpened():
             raise IOError("Cannot open webcam")  # Error handling if webcam cannot be accessed.
 
@@ -41,7 +41,7 @@ class WebcamObjectDetection:
 
         return frame
 
-    def __call__(self, frame_skip=5,display_size=(640, 480)):
+    def __call__(self, frame_skip=1,display_size=(640, 480)):
         frame_count = 0
 
         # Continuously capture frames from the webcam and process them.
